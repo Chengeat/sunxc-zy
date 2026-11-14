@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>SUNXC-ZY</title>
+<link rel="icon" type="image/png" href="logo.png">
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem("homework_assistant_theme");
+    var initial = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", initial);
+  }catch(e){
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+})();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { primary: '#3b82f6' },
+      boxShadow: { modal: '0 20px 40px rgba(15,23,42,.12)' }
+    }
+  }
+};
+</script>
+<style>
+html{ color-scheme: light; }
+html[data-theme="dark"]{ color-scheme: dark; }
+
+:root{
+  --c-border:        #e6eaf2;
+  --c-border-hover:  #cbd5e1;
+  --c-bg-soft:       #f8fafc;
+  --c-bg-soft-hover: #f1f5f9;
+  --c-primary:       #3b82f6;
+  --c-primary-dark:  #2563eb;
+  --c-danger:        #ef4444;
+  --c-danger-dark:   #dc2626;
+  --ring:            0 0 0 4px rgba(59,130,246,.15);
+
+  --c-page:          #f8fafc;
+  --c-surface:       #ffffff;
+  --c-header:        rgba(255,255,255,.85);
+  --c-text:          #0f172a;
+  --c-text-2:        #64748b;
+  --c-text-3:        #94a3b8;
+
+  --c-user-bubble:   #dbeafe;
+  --c-user-border:   #bfdbfe;
+  --c-user-text:     #0f172a;
+  --c-ai-bubble:     #ffffff;
+  --c-ai-border:     #e6eaf2;
+  --c-ai-text:       #0f172a;
+
+  --c-code-bg:       #eef2ff;
+  --c-code-text:     #4338ca;
+  --c-pre-bg:        #0f172a;
+  --c-pre-text:      #e2e8f0;
+  --c-th-bg:         #f8fafc;
+  --c-blockquote:    #cbd5e1;
+  --c-link:          #2563eb;
+
+  --c-num-bg:        #eff6ff;
+  --c-num-text:      #3b82f6;
+  --c-key-bg:        #ffffff;
+
+  --c-empty-icon-bg: #eff6ff;
+  --c-empty-icon:    #3b82f6;
+
+  --c-scroll-thumb:  #cbd5e1;
+  --c-scroll-hover:  #94a3b8;
+
+  --radius-sm:       10px;
+  --radius:          14px;
+  --radius-lg:       20px;
+  --ctrl-h:          44px;
+}
+
+html[data-theme="dark"]{
+  --c-border:        #334155;
+  --c-border-hover:  #475569;
+  --c-bg-soft:       #1e293b;
+  --c-bg-soft-hover: #334155;
+  --ring:            0 0 0 4px rgba(59,130,246,.28);
+
+  --c-page:          #0f172a;
+  --c-surface:       #1e293b;
+  --c-header:        rgba(30,41,59,.88);
+  --c-text:          #e2e8f0;
+  --c-text-2:        #94a3b8;
+  --c-text-3:        #64748b;
+
+  --c-user-bubble:   #1e40af;
+  --c-user-border:   #1d4ed8;
+  --c-user-text:     #e2e8f0;
+  --c-ai-bubble:     #1e293b;
+  --c-ai-border:     #334155;
+  --c-ai-text:       #e2e8f0;
+
+  --c-code-bg:       #312e81;
+  --c-code-text:     #c7d2fe;
+  --c-pre-bg:        #020617;
+  --c-pre-text:      #e2e8f0;
+  --c-th-bg:         #334155;
+  --c-blockquote:    #475569;
+  --c-link:          #60a5fa;
+
+  --c-num-bg:        #1e3a8a;
+  --c-num-text:      #93c5fd;
+  --c-key-bg:        #0f172a;
+
+  --c-empty-icon-bg: #1e3a8a;
+  --c-empty-icon:    #60a5fa;
+
+  --c-scroll-thumb:  #475569;
+  --c-scroll-hover:  #64748b;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+              "Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  height:100vh;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--c-page);
+  color:var(--c-text);
+  transition:background-color .25s ease, color .25s ease;
+}
+
+.is-hidden{ display:none !important; }
+
+.app-header{
+  background-color:var(--c-header) !important;
+  border-color:var(--c-border) !important;
+  transition:background-color .25s ease, border-color .25s ease;
+}
+
+.app-footer{
+  background-color:var(--c-surface) !important;
+  border-color:var(--c-border) !important;
+  transition:background-color .25s ease, border-color .25s ease;
+}
+
+.form-input,
+.form-textarea{
+  display:block;
+  width:100%;
+  min-height:var(--ctrl-h);
+  padding:11px 14px;
+  font-family:inherit;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--c-text);
+  background-color:var(--c-bg-soft);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  outline:none;
+  transition:background-color .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+}
+
+.form-textarea{
+  min-height:88px;
+  resize:vertical;
+  line-height:1.65;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder{ color:var(--c-text-3); }
+
+.form-input:hover,
+.form-textarea:hover{
+  background-color:var(--c-bg-soft-hover);
+  border-color:var(--c-border-hover);
+}
+
+.form-input:focus,
+.form-textarea:focus{
+  background-color:var(--c-surface);
+  border-color:var(--c-primary);
+  box-shadow:var(--ring);
+}
+
+.form-label{
+  display:block;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--c-text);
+  margin-bottom:7px;
+}
+.form-hint{
+  font-size:12px;
+  color:var(--c-text-3);
+  margin-top:6px;
+  line-height:1.5;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:var(--ctrl-h);
+  padding:0 18px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:500;
+  line-height:1;
+  color:var(--c-text);
+  background-color:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  cursor:pointer;
+  white-space:nowrap;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background-color .18s ease, border-color .18s ease,
+             box-shadow .18s ease, color .18s ease, transform .12s ease;
+}
+.btn:active{ transform:translateY(1px); }
+.btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+.btn i{ font-size:14px; }
+
+.btn-default{
+  background-color:var(--c-bg-soft);
+  border-color:var(--c-border);
+}
+.btn-default:hover{
+  background-color:var(--c-bg-soft-hover);
+  border-color:var(--c-border-hover);
+}
+
+.btn-primary{
+  background-color:var(--c-primary);
+  border-color:var(--c-primary);
+  color:#fff;
+}
+.btn-primary:hover{
+  background-color:var(--c-primary-dark);
+  border-color:var(--c-primary-dark);
+  box-shadow:0 8px 18px rgba(59,130,246,.32);
+}
+
+.btn-danger{
+  background-color:var(--c-danger);
+  border-color:var(--c-danger);
+  color:#fff;
+}
+.btn-danger:hover{
+  background-color:var(--c-danger-dark);
+  border-color:var(--c-danger-dark);
+  box-shadow:0 8px 18px rgba(239,68,68,.30);
+}
+
+.btn-icon{
+  width:46px;
+  min-height:46px;
+  padding:0;
+  font-size:15px;
+  flex:none;
+}
+
+.custom-select{
+  position:relative;
+  width:100%;
+}
+
+.model-select{
+  width:11rem;
+  flex:0 0 11rem;
+}
+
+.custom-select-trigger{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+  min-height:var(--ctrl-h);
+  padding:11px 12px 11px 14px;
+  font-family:inherit;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--c-text);
+  background-color:var(--c-bg-soft);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  outline:none;
+  cursor:pointer;
+  transition:background-color .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+}
+.custom-select-trigger:hover{
+  background-color:var(--c-bg-soft-hover);
+  border-color:var(--c-border-hover);
+}
+.custom-select.open .custom-select-trigger{
+  background-color:var(--c-surface);
+  border-color:var(--c-primary);
+  box-shadow:var(--ring);
+}
+.custom-select-trigger i{
+  font-size:12px;
+  color:var(--c-text-2);
+  flex:none;
+  transition:transform .2s ease;
+}
+.custom-select.open .custom-select-trigger i{
+  transform:rotate(180deg);
+}
+.custom-select-value{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.custom-select-options{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  right:0;
+  z-index:200;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius);
+  box-shadow:0 16px 36px rgba(15,23,42,.18);
+  max-height:260px;
+  overflow-y:auto;
+  display:none;
+  padding:5px;
+  min-width:160px;
+}
+.custom-select.open .custom-select-options{
+  display:block;
+}
+.custom-select-option{
+  padding:10px 14px;
+  font-size:14px;
+  color:var(--c-text);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:background-color .15s ease;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.custom-select-option:hover{
+  background-color:var(--c-bg-soft-hover);
+}
+.custom-select-option.selected{
+  background-color:var(--c-primary);
+  color:#fff;
+}
+
+.icon-close{
+  width:36px;height:36px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid transparent;
+  border-radius:var(--radius-sm);
+  background:transparent;
+  color:var(--c-text-2);
+  cursor:pointer;
+  flex:none;
+  transition:background-color .18s ease,color .18s ease,border-color .18s ease;
+}
+.icon-close:hover{ background-color:var(--c-bg-soft-hover); color:var(--c-text); border-color:var(--c-border); }
+
+.modal-card{
+  background:var(--c-surface);
+  border-radius:var(--radius-lg);
+  border:1px solid var(--c-border);
+  box-shadow:0 24px 60px rgba(15,23,42,.28);
+  color:var(--c-text);
+  transition:background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+.modal-card .border-slate-100,
+.modal-card .border-slate-50{
+  border-color:var(--c-border) !important;
+}
+
+.toast-card{
+  background:var(--c-surface);
+  border-radius:18px;
+  border:1px solid var(--c-border);
+  box-shadow:0 18px 40px rgba(15,23,42,.18);
+  padding:18px 20px;
+  color:var(--c-text);
+  transition:background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+
+.adv-panel{
+  background-color:var(--c-bg-soft);
+  border:1px solid var(--c-border);
+  border-left:3px solid var(--c-primary);
+  border-radius:var(--radius);
+  padding:14px 16px;
+}
+
+.modal-overlay{ display:none; }
+.modal-overlay.open{ display:flex; }
+
+.img-preview-box{
+  display:none;
+  background-color:var(--c-bg-soft) !important;
+  border-color:var(--c-border) !important;
+}
+.img-preview-box.open{ display:flex; }
+
+.logo-dot{
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:12px;
+  background:linear-gradient(135deg,#60a5fa,#3b82f6);
+  color:#fff;
+  font-size:16px;
+  flex:none;
+  box-shadow:0 6px 14px rgba(59,130,246,.30);
+}
+
+.empty-tip{ text-align:center; padding-top:80px; color:var(--c-text-3); }
+.empty-icon{
+  width:64px;height:64px;margin:0 auto;
+  border-radius:20px;
+  background:var(--c-empty-icon-bg);color:var(--c-empty-icon);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+}
+.empty-title{ margin-top:18px; font-size:17px; font-weight:600; color:var(--c-text-2); }
+.empty-sub{ margin-top:8px; font-size:13px; color:var(--c-text-3); padding:0 20px; line-height:1.6; }
+
+.message{ display:flex; margin:14px 0; }
+.message.user{ justify-content:flex-end; }
+.message.ai{ justify-content:flex-start; }
+
+.bubble{
+  max-width:88%;
+  padding:11px 15px;
+  font-size:15px;
+  line-height:1.7;
+  word-break:break-word;
+  border:1px solid transparent;
+  border-radius:18px;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+  transition:background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+.bubble-user{
+  background-color:var(--c-user-bubble);
+  border-color:var(--c-user-border);
+  border-bottom-right-radius:6px;
+  color:var(--c-user-text);
+}
+.bubble-ai{
+  background-color:var(--c-ai-bubble);
+  border-color:var(--c-ai-border);
+  border-bottom-left-radius:6px;
+  color:var(--c-ai-text);
+}
+.bubble-user .bubble-text{ white-space:pre-wrap; }
+
+.stop-tip{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--c-text-3);
+}
+
+.bubble-text > *:first-child{ margin-top:0; }
+.bubble-text > *:last-child{ margin-bottom:0; }
+.bubble-text p{ margin:.5em 0; }
+.bubble-text ul,
+.bubble-text ol{ margin:.5em 0; padding-left:1.4em; }
+.bubble-text li{ margin:.22em 0; }
+.bubble-text h1,
+.bubble-text h2,
+.bubble-text h3,
+.bubble-text h4{ margin:.75em 0 .4em; font-weight:600; line-height:1.4; }
+.bubble-text h1{ font-size:1.3em; }
+.bubble-text h2{ font-size:1.18em; }
+.bubble-text h3{ font-size:1.06em; }
+.bubble-text blockquote{
+  margin:.6em 0;
+  padding-left:12px;
+  border-left:3px solid var(--c-blockquote);
+  color:var(--c-text-2);
+}
+.bubble-text hr{ margin:.9em 0; border:none; border-top:1px solid var(--c-border); }
+
+.bubble-text pre{
+  margin:.65em 0;
+  padding:12px 14px;
+  background:var(--c-pre-bg);
+  color:var(--c-pre-text);
+  border-radius:var(--radius);
+  overflow-x:auto;
+  font-size:13px;
+  line-height:1.6;
+}
+.bubble-text code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.9em;
+  padding:.15em .42em;
+  border-radius:6px;
+  background:var(--c-code-bg);
+  color:var(--c-code-text);
+}
+.bubble-text pre code{
+  background:transparent;
+  color:inherit;
+  padding:0;
+  font-size:inherit;
+}
+.bubble-text table{
+  margin:.65em 0;
+  border-collapse:collapse;
+  font-size:.94em;
+  width:100%;
+}
+.bubble-text th,
+.bubble-text td{
+  border:1px solid var(--c-border);
+  padding:6px 10px;
+  text-align:left;
+}
+.bubble-text th{ background:var(--c-th-bg); font-weight:600; }
+.bubble-text img{ max-width:100%; border-radius:var(--radius-sm); }
+.bubble-text a{ color:var(--c-link); text-decoration:underline; }
+
+.img-preview{
+  display:block;
+  max-width:240px;
+  max-height:240px;
+  border-radius:var(--radius);
+  margin-bottom:10px;
+  border:1px solid var(--c-border);
+}
+
+.scrollbar-thin{ scrollbar-width:thin; scrollbar-color:var(--c-scroll-thumb) transparent; }
+.scrollbar-thin::-webkit-scrollbar{ width:8px; height:8px; }
+.scrollbar-thin::-webkit-scrollbar-track{ background:transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb{
+  background-color:var(--c-scroll-thumb);
+  border-radius:99px;
+  border:2px solid transparent;
+  background-clip:content-box;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover{ background-color:var(--c-scroll-hover); background-clip:content-box; }
+
+#advToggle i{ transition:transform .2s ease; }
+#advToggle i.rotated{ transform:rotate(90deg); }
+#advToggle{ color:var(--c-link); }
+
+.guide-section + .guide-section{ margin-top:24px; }
+.guide-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.guide-num{
+  font-size:11px;
+  font-weight:700;
+  color:var(--c-num-text);
+  background:var(--c-num-bg);
+  padding:3px 8px;
+  border-radius:6px;
+  letter-spacing:.06em;
+}
+.guide-title h3{
+  font-size:16px;
+  font-weight:600;
+  color:var(--c-text);
+}
+.guide-p{
+  font-size:14px;
+  line-height:1.7;
+  color:var(--c-text-2);
+  margin-bottom:8px;
+}
+.guide-steps{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+.guide-step{
+  display:flex;
+  gap:12px;
+  padding:12px 14px;
+  background:var(--c-bg-soft);
+  border:1px solid var(--c-border);
+  border-radius:12px;
+}
+.guide-step-num{
+  flex:none;
+  width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--c-primary);
+  color:#fff;
+  font-size:12px;
+  font-weight:600;
+  border-radius:50%;
+}
+.guide-step b{
+  display:block;
+  font-size:14px;
+  color:var(--c-text);
+  margin-bottom:3px;
+}
+.guide-step p{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--c-text-2);
+  margin:0;
+}
+.guide-field{
+  padding:10px 0;
+  border-bottom:1px dashed var(--c-border);
+}
+.guide-field:last-child{ border-bottom:none; padding-bottom:0; }
+.guide-field label{
+  display:block;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--c-text);
+  margin-bottom:4px;
+}
+.guide-field p{
+  font-size:13.5px;
+  line-height:1.65;
+  color:var(--c-text-2);
+  margin:0;
+}
+.guide-list{
+  padding-left:20px;
+  font-size:14px;
+  line-height:1.8;
+  color:var(--c-text-2);
+  margin:0;
+}
+.guide-list li{ margin:5px 0; }
+.guide-list li::marker{ color:var(--c-primary); }
+.guide-keys{
+  background:var(--c-bg-soft);
+  border:1px solid var(--c-border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.guide-key-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  font-size:13.5px;
+  border-bottom:1px solid var(--c-border);
+}
+.guide-key-row:last-child{ border-bottom:none; }
+.guide-key-row > div:first-child{
+  flex:none;
+  color:var(--c-text);
+}
+.guide-key-row > div:last-child{
+  color:var(--c-text-2);
+  text-align:right;
+}
+.guide-faq details{
+  border-bottom:1px solid var(--c-border);
+  padding:10px 0;
+}
+.guide-faq details:last-child{ border-bottom:none; padding-bottom:0; }
+.guide-faq summary{
+  cursor:pointer;
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--c-text);
+  list-style:none;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:4px 0;
+}
+.guide-faq summary::before{
+  content:"";
+  width:6px;height:6px;
+  border-right:1.5px solid var(--c-text-2);
+  border-bottom:1.5px solid var(--c-text-2);
+  transform:rotate(-45deg);
+  transition:transform .2s ease;
+  margin-left:3px;
+  flex:none;
+}
+.guide-faq details[open] summary::before{
+  transform:rotate(45deg);
+}
+.guide-faq summary::-webkit-details-marker{ display:none; }
+.guide-faq p{
+  font-size:13px;
+  line-height:1.7;
+  color:var(--c-text-2);
+  padding:6px 0 4px 22px;
+  margin:0;
+}
+.guide-footer{
+  text-align:center;
+  font-size:12.5px;
+  color:var(--c-text-3);
+  padding-top:14px;
+  border-top:1px dashed var(--c-border);
+  margin-top:24px;
+}
+kbd{
+  display:inline-block;
+  padding:1px 6px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;
+  color:var(--c-text);
+  background:var(--c-key-bg);
+  border:1px solid var(--c-border);
+  border-bottom-width:2px;
+  border-radius:5px;
+  line-height:1.5;
+}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.9em;
+  padding:.15em .42em;
+  border-radius:6px;
+  background:var(--c-code-bg);
+  color:var(--c-code-text);
+}
+
+.hide-sm{ display:flex; }
+
+@media (max-width:640px){
+  .hide-sm{ display:none !important; }
+
+  header .btn-icon{
+    width:38px;
+    min-height:38px;
+    font-size:13px;
+    border-radius:12px;
+  }
+  header .logo-dot{ display:none; }
+  header h1{ font-size:14.5px; }
+
+  .model-select{
+    width:auto;
+    flex:0 1 auto;
+    max-width:6.5rem;
+    min-width:5rem;
+  }
+  .custom-select-trigger{
+    padding:8px 10px;
+    font-size:13px;
+    min-height:38px;
+    border-radius:12px;
+  }
+  .custom-select-options{
+    min-width:180px;
+    right:auto;
+  }
+
+  .bubble{
+    max-width:92%;
+    padding:10px 13px;
+    font-size:14.5px;
+    border-radius:16px;
+  }
+
+  .form-input,
+  .form-textarea{
+    font-size:16px;
+  }
+
+  .form-textarea{
+    min-height:72px;
+    padding:10px 12px;
+  }
+
+  .btn-icon{ border-radius:12px; }
+
+  .empty-tip{ padding-top:56px; }
+
+  .modal-overlay{ padding:10px; }
+  .modal-card{ max-height:94vh; border-radius:18px; }
+
+  .guide-title h3{ font-size:15px; }
+  .guide-num{ font-size:10.5px; }
+  .guide-key-row{ font-size:13px; padding:9px 12px; }
+}
+
+@media (max-width:400px){
+  header h1{ font-size:13.5px; }
+  .model-select{ max-width:5.5rem; }
+  .custom-select-trigger{ padding:7px 9px; font-size:12.5px; }
+  header .btn-icon{ width:34px; min-height:34px; font-size:12px; }
+}
+
+.safe-bottom{
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+</style>
+</head>
+<body>
+
+<header class="app-header flex-none backdrop-blur border-b border-slate-200 z-30">
+  <div class="max-w-4xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 min-w-0 flex-1">
+      <div class="logo-dot hide-sm"><i class="fa fa-graduation-cap"></i></div>
+      <h1 class="font-semibold tracking-tight truncate" data-i18n="appTitle">SUNXC 作业助手</h1>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+      <div class="custom-select model-select" id="modelSwitchCustom">
+        <button type="button" class="custom-select-trigger">
+          <span class="custom-select-value" data-i18n="selectModel">请选择模型</span>
+          <i class="fa fa-chevron-down"></i>
+        </button>
+        <div class="custom-select-options"></div>
+      </div>
+      <select id="modelSwitchSelect" class="is-hidden">
+        <option value="">请选择模型</option>
+      </select>
+      <button id="langBtn" class="btn btn-default btn-icon" title="Switch to English" aria-label="Switch to English">
+        <span id="langBtnText" style="font-size:12px;font-weight:600;line-height:1;">EN</span>
+      </button>
+      <button id="themeBtn" class="btn btn-default btn-icon" title="切换主题" aria-label="切换主题">
+        <i class="fa fa-moon-o"></i>
+      </button>
+      <button id="helpBtn" class="btn btn-default btn-icon" data-i18n-title="help" data-i18n-aria-label="help" title="使用指南" aria-label="使用指南">
+        <i class="fa fa-question"></i>
+      </button>
+      <button id="clearChatBtn" class="btn btn-default btn-icon" data-i18n-title="clearChat" data-i18n-aria-label="clearChat" title="清空对话" aria-label="清空对话">
+        <i class="fa fa-trash-o"></i>
+      </button>
+      <button id="settingBtn" class="btn btn-primary btn-icon" data-i18n-title="customModel" data-i18n-aria-label="customModel" title="自定义模型" aria-label="自定义模型">
+        <i class="fa fa-cog"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="chatContainer" class="flex-1 overflow-y-auto scrollbar-thin w-full">
+  <div id="chatInner" class="max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-8"></div>
+</main>
+
+<footer class="app-footer flex-none border-t border-slate-200">
+  <div class="max-w-4xl mx-auto px-3 sm:px-6 pt-3 sm:pt-4 safe-bottom">
+
+    <div id="imgPreviewBox" class="img-preview-box mb-2.5 sm:mb-3 items-center gap-2 sm:gap-3 p-2.5 sm:p-3 border rounded-2xl">
+      <img id="previewImg" class="img-preview" data-i18n-alt="previewAlt" alt="预览" style="margin-bottom:0" />
+      <button id="removeImgBtn" class="btn btn-default" style="min-height:36px;padding:0 14px;font-size:13px;">
+        <i class="fa fa-times"></i><span data-i18n="removeImage">移除图片</span>
+      </button>
+    </div>
+
+    <div class="flex items-end gap-2 sm:gap-3">
+      <button id="uploadImgBtn" class="btn btn-default btn-icon" data-i18n-title="uploadImage" data-i18n-aria-label="uploadImage" title="上传图片" aria-label="上传图片">
+        <i class="fa fa-picture-o"></i>
+      </button>
+      <input id="imgInput" type="file" accept="image/*" class="is-hidden" />
+      <textarea id="userInput" rows="2" class="form-textarea flex-1"
+                data-i18n-placeholder="inputPlaceholder"
+                placeholder="输入你的题目…（Ctrl + Enter 发送）"></textarea>
+      <button id="sendBtn" class="btn btn-primary btn-icon" data-i18n-title="send" data-i18n-aria-label="send" title="发送" aria-label="发送">
+        <i class="fa fa-paper-plane"></i>
+      </button>
+      <button id="stopBtn" class="btn btn-danger btn-icon is-hidden" data-i18n-title="stop" data-i18n-aria-label="stop" title="停止生成" aria-label="停止生成">
+        <i class="fa fa-stop"></i>
+      </button>
+    </div>
+  </div>
+</footer>
+
+<div id="settingModal" class="modal-overlay fixed inset-0 z-50 items-center justify-center bg-slate-900/50 backdrop-blur-sm p-3 sm:p-4">
+  <div class="modal-card w-full max-w-lg max-h-[92vh] flex flex-col">
+
+    <div class="flex-none px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-base sm:text-lg font-semibold" data-i18n="settingTitle">自定义模型</h2>
+      <button id="closeModalBtn" class="icon-close" data-i18n-aria-label="close" aria-label="关闭"><i class="fa fa-times"></i></button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto scrollbar-thin px-5 sm:px-6 py-5 space-y-4">
+
+      <div>
+        <label class="form-label">* <span data-i18n="apiFormat">API 格式</span></label>
+        <div class="custom-select" id="apiFormatCustom">
+          <button type="button" class="custom-select-trigger">
+            <span class="custom-select-value">OpenAI Chat Completions 格式</span>
+            <i class="fa fa-chevron-down"></i>
+          </button>
+          <div class="custom-select-options"></div>
+        </div>
+        <select id="apiFormat" class="is-hidden">
+          <option value="chat">OpenAI Chat Completions 格式</option>
+          <option value="responses">OpenAI Responses API 格式</option>
+          <option value="anthropic">Anthropic Messages 格式</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label">* <span data-i18n="apiBase">请求地址</span></label>
+        <input id="apiBase" type="text" class="form-input"
+               data-i18n-placeholder="apiBasePlaceholder"
+               placeholder="例如 https://api.deepseek.com/v1" />
+        <p class="form-hint" data-i18n="apiBaseHint">不要以斜杠结尾，接口路径会自动补全</p>
+      </div>
+
+      <div>
+        <label class="form-label">* <span data-i18n="modelId">模型 ID</span></label>
+        <input id="modelId" type="text" class="form-input"
+               data-i18n-placeholder="modelIdPlaceholder"
+               placeholder="例如 deepseek-chat" />
+      </div>
+
+      <div>
+        <label class="form-label" data-i18n="modelShowName">模型展示名称</label>
+        <input id="modelShowName" type="text" class="form-input"
+               data-i18n-placeholder="modelShowNamePlaceholder"
+               placeholder="留空则显示模型 ID" />
+      </div>
+
+      <div>
+        <label class="form-label">* <span data-i18n="apiKey">API 密钥</span></label>
+        <input id="apiKey" type="password" class="form-input"
+               data-i18n-placeholder="apiKeyPlaceholder"
+               placeholder="sk-..." autocomplete="off" />
+      </div>
+
+      <div>
+        <button type="button" id="advToggle" class="text-sm inline-flex items-center font-medium">
+          <i class="fa fa-chevron-right mr-1"></i><span data-i18n="advanced">高级配置</span>
+        </button>
+
+        <div id="advPanel" class="adv-panel is-hidden mt-3 space-y-4">
+          <div>
+            <label class="form-label" data-i18n="temperature">Temperature（0 ~ 1）</label>
+            <input id="temp" type="number" step="0.1" min="0" max="1" value="0.7" class="form-input" />
+          </div>
+          <div>
+            <label class="form-label" data-i18n="systemPrompt">System 提示词</label>
+            <textarea id="systemPrompt" rows="4" class="form-textarea">你是作业助手。回答学习问题，讲解解题思路，引导思考，不要直接给出完整可抄写的答案。分步解析知识点，鼓励用户自己完成作答。</textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flex-none px-5 sm:px-6 py-4 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+      <button id="deleteModelBtn" class="btn btn-danger is-hidden">
+        <i class="fa fa-trash-o"></i><span data-i18n="delete">删除</span>
+      </button>
+      <div class="flex gap-2 ml-auto">
+        <button id="resetSettingBtn" class="btn btn-default" data-i18n="reset">重置</button>
+        <button id="testConnBtn" class="btn btn-default" data-i18n="testConn">连通测试</button>
+        <button id="saveSettingBtn" class="btn btn-primary" data-i18n="saveModel">保存模型</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="guideModal" class="modal-overlay fixed inset-0 z-50 items-center justify-center bg-slate-900/50 backdrop-blur-sm p-3 sm:p-4">
+  <div class="modal-card w-full max-w-2xl max-h-[92vh] flex flex-col">
+
+    <div class="flex-none px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="logo-dot" style="width:32px;height:32px;font-size:14px;"><i class="fa fa-book"></i></div>
+        <h2 class="text-base sm:text-lg font-semibold truncate" data-i18n="guideTitle">使用指南</h2>
+      </div>
+      <button id="closeGuideBtn" class="icon-close" data-i18n-aria-label="close" aria-label="关闭"><i class="fa fa-times"></i></button>
+    </div>
+
+    <div id="guideContent" class="flex-1 overflow-y-auto scrollbar-thin px-5 sm:px-6 py-5"></div>
+  </div>
+</div>
+
+<div id="toastModal" class="modal-overlay fixed inset-0 z-[60] items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="toast-card w-full max-w-sm">
+    <p id="toastText" class="text-sm leading-relaxed" data-i18n="toastDefault">提示信息</p>
+    <div class="mt-4 flex justify-end">
+      <button id="toastOkBtn" class="btn btn-primary" style="min-height:38px;padding:0 18px;" data-i18n="ok">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "homework_assistant_model_list";
+const THEME_KEY   = "homework_assistant_theme";
+const LANG_KEY    = "homework_assistant_lang";
+const DEFAULT_SYSTEM = "你是作业助手。回答学习问题，讲解解题思路，引导思考，不要直接给出完整可抄写的答案。分步解析知识点，鼓励用户自己完成作答。";
+
+const I18N = {
+  zh: {
+    appTitle: "SUNXC 作业助手",
+    help: "使用指南",
+    clearChat: "清空对话",
+    customModel: "自定义模型",
+    uploadImage: "上传图片",
+    send: "发送",
+    stop: "停止生成",
+    removeImage: "移除图片",
+    previewAlt: "预览",
+    inputPlaceholder: "输入你的题目…（Ctrl + Enter 发送）",
+    selectModel: "请选择模型",
+
+    settingTitle: "自定义模型",
+    close: "关闭",
+    apiFormat: "API 格式",
+    formatChat: "OpenAI Chat Completions 格式",
+    formatResponses: "OpenAI Responses API 格式",
+    formatAnthropic: "Anthropic Messages 格式",
+    apiBase: "请求地址",
+    apiBasePlaceholder: "例如 https://api.deepseek.com/v1",
+    apiBaseHint: "不要以斜杠结尾，接口路径会自动补全",
+    modelId: "模型 ID",
+    modelIdPlaceholder: "例如 deepseek-chat",
+    modelShowName: "模型展示名称",
+    modelShowNamePlaceholder: "留空则显示模型 ID",
+    apiKey: "API 密钥",
+    apiKeyPlaceholder: "sk-...",
+    advanced: "高级配置",
+    temperature: "Temperature（0 ~ 1）",
+    systemPrompt: "System 提示词",
+    delete: "删除",
+    reset: "重置",
+    testConn: "连通测试",
+    saveModel: "保存模型",
+    testing: "测试中…",
+
+    switchedTo: "已切换至：{name}",
+    modelSaved: "模型配置已保存",
+    modelDeleted: "模型已删除",
+    requiredFields: "带 * 的必填项不能为空",
+    selectModelFirst: "请先在右上角选择或新建一个模型",
+    testSuccess: "连通测试成功",
+    requestFailed: "请求失败：HTTP {status}{detail}",
+    timeout: "请求超时（20s）",
+    networkError: "网络请求失败，大概率是跨域 CORS 问题，需要代理",
+    toastDefault: "提示信息",
+    ok: "确定",
+
+    emptyTitle: "输入题目开始提问",
+    emptySub: '先点右上角 <i class="fa fa-cog"></i> 配置 API 信息 · Ctrl + Enter 发送',
+    stopped: "已停止生成",
+    emptyResponse: "（模型未返回内容）",
+    requestError: "请求异常：{msg}",
+    corsHint: "若为 CORS 报错，请通过反向代理调用接口。",
+    defaultImagePrompt: "请看这张图片",
+    imageAlt: "图片",
+
+    guideTitle: "使用指南",
+    switchToDark: "切换到深色模式",
+    switchToLight: "切换到浅色模式"
+  },
+  en: {
+    appTitle: "SUNXC Homework Assistant",
+    help: "User Guide",
+    clearChat: "Clear chat",
+    customModel: "Custom Model",
+    uploadImage: "Upload image",
+    send: "Send",
+    stop: "Stop generating",
+    removeImage: "Remove image",
+    previewAlt: "Preview",
+    inputPlaceholder: "Type your question… (Ctrl + Enter to send)",
+    selectModel: "Select a model",
+
+    settingTitle: "Custom Model",
+    close: "Close",
+    apiFormat: "API Format",
+    formatChat: "OpenAI Chat Completions",
+    formatResponses: "OpenAI Responses API",
+    formatAnthropic: "Anthropic Messages",
+    apiBase: "Base URL",
+    apiBasePlaceholder: "e.g. https://api.deepseek.com/v1",
+    apiBaseHint: "Do not end with a slash; the endpoint path is appended automatically",
+    modelId: "Model ID",
+    modelIdPlaceholder: "e.g. deepseek-chat",
+    modelShowName: "Display Name",
+    modelShowNamePlaceholder: "Leave empty to show the model ID",
+    apiKey: "API Key",
+    apiKeyPlaceholder: "sk-...",
+    advanced: "Advanced",
+    temperature: "Temperature (0 ~ 1)",
+    systemPrompt: "System Prompt",
+    delete: "Delete",
+    reset: "Reset",
+    testConn: "Test Connection",
+    saveModel: "Save Model",
+    testing: "Testing…",
+
+    switchedTo: "Switched to: {name}",
+    modelSaved: "Model configuration saved",
+    modelDeleted: "Model deleted",
+    requiredFields: "Required fields marked with * cannot be empty",
+    selectModelFirst: "Please select or create a model in the top-right corner first",
+    testSuccess: "Connection test succeeded",
+    requestFailed: "Request failed: HTTP {status}{detail}",
+    timeout: "Request timed out (20s)",
+    networkError: "Network request failed. This is likely a CORS issue and requires a proxy.",
+    toastDefault: "Notice",
+    ok: "OK",
+
+    emptyTitle: "Enter a question to start",
+    emptySub: 'Click <i class="fa fa-cog"></i> at top-right to configure API · Ctrl + Enter to send',
+    stopped: "Generation stopped",
+    emptyResponse: "(The model returned no content)",
+    requestError: "Request error: {msg}",
+    corsHint: "If this is a CORS error, please call the API through a reverse proxy.",
+    defaultImagePrompt: "Please look at this image",
+    imageAlt: "Image",
+
+    guideTitle: "User Guide",
+    switchToDark: "Switch to dark mode",
+    switchToLight: "Switch to light mode"
+  }
+};
+
+const GUIDE_HTML = {
+  zh: `
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">01</span>
+        <h3>快速开始</h3>
+      </div>
+      <p class="guide-p">首次使用，只需三步：</p>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div>
+            <b>配置模型</b>
+            <p>点右上角 <i class="fa fa-cog"></i> 按钮，填入 API 地址、模型 ID 和密钥后保存。</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div>
+            <b>选择模型</b>
+            <p>在顶部下拉框中选择刚保存的模型。</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div>
+            <b>开始提问</b>
+            <p>在底部输入题目，按 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> 发送。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">02</span>
+        <h3>配置模型详解</h3>
+      </div>
+      <div class="guide-field">
+        <label>API 格式</label>
+        <p>根据你的服务商选择。大多数兼容 OpenAI 的服务用 <b>Chat Completions</b> 即可；Anthropic（Claude）请选 <b>Messages</b>。</p>
+      </div>
+      <div class="guide-field">
+        <label>请求地址</label>
+        <p>API 的基础 URL，<b>不需要</b>带 <code>/chat/completions</code> 后缀，系统会自动补全。例如 <code>https://api.deepseek.com/v1</code></p>
+      </div>
+      <div class="guide-field">
+        <label>模型 ID</label>
+        <p>服务商规定的模型标识，例如 <code>deepseek-chat</code>、<code>gpt-4o-mini</code>、<code>claude-3-5-sonnet-20241022</code>。</p>
+      </div>
+      <div class="guide-field">
+        <label>模型展示名称</label>
+        <p>可选。留空则显示模型 ID，填入后方便在顶部下拉框中辨认。</p>
+      </div>
+      <div class="guide-field">
+        <label>API 密钥</label>
+        <p>服务商提供的 Key，仅保存在你浏览器的本地存储中。</p>
+      </div>
+      <div class="guide-field">
+        <label>高级配置</label>
+        <p><b>Temperature</b> 控制回答的随机性（0 更稳定，1 更发散，默认 0.7）。<b>System 提示词</b> 决定 AI 的角色定位，默认已针对作业场景优化。</p>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">03</span>
+        <h3>对话与图片</h3>
+      </div>
+      <ul class="guide-list">
+        <li>在底部输入框输入题目，按 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> 发送（<kbd>Enter</kbd> 为换行）。</li>
+        <li>点击 <i class="fa fa-picture-o"></i> 按钮上传题目图片，或直接 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴截图。</li>
+        <li>生成过程中可点 <i class="fa fa-stop"></i> 按钮停止，已生成的内容会保留。</li>
+        <li>点击 <i class="fa fa-trash-o"></i> 清空当前对话历史（不影响已保存的模型配置）。</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">04</span>
+        <h3>模型管理</h3>
+      </div>
+      <ul class="guide-list">
+        <li>可以保存多个模型配置，通过顶部下拉框随时切换。</li>
+        <li>选中某个模型后，打开设置面板可对其进行 <b>修改</b> 或 <b>删除</b>。</li>
+        <li>点击“重置”会清空当前表单，但不会删除已保存的模型。</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">05</span>
+        <h3>快捷键</h3>
+      </div>
+      <div class="guide-keys">
+        <div class="guide-key-row">
+          <div><kbd>Ctrl</kbd> + <kbd>Enter</kbd></div>
+          <div>发送消息</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Enter</kbd></div>
+          <div>输入框内换行</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+          <div>粘贴图片</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Esc</kbd></div>
+          <div>关闭当前弹窗</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">06</span>
+        <h3>常见问题</h3>
+      </div>
+      <div class="guide-faq">
+        <details>
+          <summary>提示“网络请求失败 / CORS”？</summary>
+          <p>浏览器直接请求第三方 API 时，可能被跨域策略拦截。解决办法：使用支持 CORS 的服务商，或自建一个反向代理来转发请求。</p>
+        </details>
+        <details>
+          <summary>提示 401 / 403？</summary>
+          <p>通常是 API Key 不正确、已过期或没有该模型的权限。请检查密钥并确认账号有相应额度。</p>
+        </details>
+        <details>
+          <summary>请求一直转圈？</summary>
+          <p>可能是服务商响应较慢，或流式接口被中断。可点击停止按钮后重试；部分服务商需要把“请求地址”写成特定格式。</p>
+        </details>
+        <details>
+          <summary>我的 API 密钥安全吗？</summary>
+          <p>所有配置都保存在你浏览器的本地存储中，不会上传到任何第三方服务器。但请不要在公共设备上保存密钥。</p>
+        </details>
+      </div>
+    </section>
+
+    <div class="guide-footer">
+      如遇问题，可先尝试刷新页面或重新配置模型。
+    </div>
+  `,
+  en: `
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">01</span>
+        <h3>Quick Start</h3>
+      </div>
+      <p class="guide-p">First time here? Just three steps:</p>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div>
+            <b>Configure a model</b>
+            <p>Click the <i class="fa fa-cog"></i> button at the top-right, fill in the API base URL, model ID and key, then save.</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div>
+            <b>Select the model</b>
+            <p>Choose the model you just saved from the top dropdown.</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div>
+            <b>Start asking</b>
+            <p>Type your question at the bottom and press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">02</span>
+        <h3>Configuration Details</h3>
+      </div>
+      <div class="guide-field">
+        <label>API Format</label>
+        <p>Choose based on your provider. Most OpenAI-compatible services use <b>Chat Completions</b>; Anthropic (Claude) uses <b>Messages</b>.</p>
+      </div>
+      <div class="guide-field">
+        <label>Base URL</label>
+        <p>The API base URL, <b>without</b> the <code>/chat/completions</code> suffix — it will be appended automatically. Example: <code>https://api.deepseek.com/v1</code></p>
+      </div>
+      <div class="guide-field">
+        <label>Model ID</label>
+        <p>The model identifier from your provider, e.g. <code>deepseek-chat</code>, <code>gpt-4o-mini</code>, <code>claude-3-5-sonnet-20241022</code>.</p>
+      </div>
+      <div class="guide-field">
+        <label>Display Name</label>
+        <p>Optional. Leave empty to show the model ID; a custom name makes it easier to identify in the top dropdown.</p>
+      </div>
+      <div class="guide-field">
+        <label>API Key</label>
+        <p>The key from your provider, stored only in your browser's local storage.</p>
+      </div>
+      <div class="guide-field">
+        <label>Advanced</label>
+        <p><b>Temperature</b> controls randomness (0 is more stable, 1 is more diverse; default 0.7). <b>System Prompt</b> defines the AI's role; the default is optimized for homework tutoring.</p>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">03</span>
+        <h3>Chat &amp; Images</h3>
+      </div>
+      <ul class="guide-list">
+        <li>Type your question at the bottom and press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send (<kbd>Enter</kbd> for a new line).</li>
+        <li>Click the <i class="fa fa-picture-o"></i> button to upload a question image, or press <kbd>Ctrl</kbd> + <kbd>V</kbd> to paste a screenshot.</li>
+        <li>Click the <i class="fa fa-stop"></i> button during generation to stop; already generated content is kept.</li>
+        <li>Click the <i class="fa fa-trash-o"></i> button to clear the current chat history (saved model configurations are not affected).</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">04</span>
+        <h3>Model Management</h3>
+      </div>
+      <ul class="guide-list">
+        <li>You can save multiple model configurations and switch between them from the top dropdown.</li>
+        <li>After selecting a model, open the settings panel to <b>modify</b> or <b>delete</b> it.</li>
+        <li>Clicking “Reset” clears the current form but does not delete saved models.</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">05</span>
+        <h3>Keyboard Shortcuts</h3>
+      </div>
+      <div class="guide-keys">
+        <div class="guide-key-row">
+          <div><kbd>Ctrl</kbd> + <kbd>Enter</kbd></div>
+          <div>Send message</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Enter</kbd></div>
+          <div>New line in input box</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+          <div>Paste image</div>
+        </div>
+        <div class="guide-key-row">
+          <div><kbd>Esc</kbd></div>
+          <div>Close the current modal</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-title">
+        <span class="guide-num">06</span>
+        <h3>FAQ</h3>
+      </div>
+      <div class="guide-faq">
+        <details>
+          <summary>“Network request failed / CORS”?</summary>
+          <p>Browsers may block direct cross-origin requests to third-party APIs. Use a provider that supports CORS, or set up a reverse proxy.</p>
+        </details>
+        <details>
+          <summary>401 / 403?</summary>
+          <p>Usually an invalid or expired API Key, or the account lacks permission for the model. Check the key and quota.</p>
+        </details>
+        <details>
+          <summary>The request keeps loading?</summary>
+          <p>The provider may be slow, or the streaming connection was interrupted. Click stop and retry; some providers require a specific base URL format.</p>
+        </details>
+        <details>
+          <summary>Is my API key safe?</summary>
+          <p>All configurations are stored in your browser's local storage and are not uploaded to any third-party server. Do not save keys on public devices.</p>
+        </details>
+      </div>
+    </section>
+
+    <div class="guide-footer">
+      If you run into issues, try refreshing the page or re-configuring the model.
+    </div>
+  `
+};
+
+let currentLang = "zh";
+
+function t(key, vars){
+  let s = (I18N[currentLang] && I18N[currentLang][key]);
+  if(s == null) s = (I18N.zh[key] != null ? I18N.zh[key] : key);
+  if(vars){
+    Object.keys(vars).forEach(k => {
+      s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+    });
+  }
+  return s;
+}
+
+function loadLang(){
+  try{
+    const saved = localStorage.getItem(LANG_KEY);
+    if(saved === "zh" || saved === "en") currentLang = saved;
+  }catch(e){}
+}
+
+function applyI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+    el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach(el => {
+    el.alt = t(el.dataset.i18nAlt);
+  });
+}
+
+function applyApiFormatOptions(){
+  const map = { chat: "formatChat", responses: "formatResponses", anthropic: "formatAnthropic" };
+  Array.from(apiFormat.options).forEach(opt => {
+    if(map[opt.value]) opt.textContent = t(map[opt.value]);
+  });
+  if(apiFormatCustomSelect) apiFormatCustomSelect.refresh();
+}
+
+function updateLangBtn(){
+  langBtnText.textContent = currentLang === "zh" ? "EN" : "中";
+  const label = currentLang === "zh" ? "Switch to English" : "切换到中文";
+  langBtn.title = label;
+  langBtn.setAttribute("aria-label", label);
+}
+
+function renderGuide(){
+  guideContent.innerHTML = GUIDE_HTML[currentLang] || GUIDE_HTML.zh;
+}
+
+function emptyTipHtml(){
+  return `
+    <div class="empty-tip">
+      <div class="empty-icon"><i class="fa fa-pencil-square-o"></i></div>
+      <p class="empty-title">${t("emptyTitle")}</p>
+      <p class="empty-sub">${t("emptySub")}</p>
+    </div>`;
+}
+
+function refreshEmptyTip(){
+  if(!chatInner.querySelector(".message")){
+    chatInner.innerHTML = emptyTipHtml();
+  }
+}
+
+function setLang(lang){
+  currentLang = (lang === "en") ? "en" : "zh";
+  try{ localStorage.setItem(LANG_KEY, currentLang); }catch(e){}
+  document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+  document.title = t("appTitle");
+
+  applyI18n();
+  applyApiFormatOptions();
+  renderModelSelect();
+  refreshEmptyTip();
+  updateThemeBtn();
+  updateLangBtn();
+  renderGuide();
+}
+
+let modelList   = [];
+let currentUid  = null;
+let messages    = [];
+let fetchController = null;
+let imageBase64 = null;
+let modelCustomSelect = null;
+let apiFormatCustomSelect = null;
+
+const chatContainer     = document.getElementById("chatContainer");
+const chatInner         = document.getElementById("chatInner");
+const userInput         = document.getElementById("userInput");
+const sendBtn           = document.getElementById("sendBtn");
+const stopBtn           = document.getElementById("stopBtn");
+const clearChatBtn      = document.getElementById("clearChatBtn");
+const settingBtn        = document.getElementById("settingBtn");
+const settingModal      = document.getElementById("settingModal");
+const closeModalBtn     = document.getElementById("closeModalBtn");
+const saveSettingBtn    = document.getElementById("saveSettingBtn");
+const resetSettingBtn   = document.getElementById("resetSettingBtn");
+const deleteModelBtn    = document.getElementById("deleteModelBtn");
+const testConnBtn       = document.getElementById("testConnBtn");
+
+const themeBtn          = document.getElementById("themeBtn");
+const langBtn           = document.getElementById("langBtn");
+const langBtnText       = document.getElementById("langBtnText");
+const helpBtn           = document.getElementById("helpBtn");
+const guideModal        = document.getElementById("guideModal");
+const closeGuideBtn     = document.getElementById("closeGuideBtn");
+const guideContent      = document.getElementById("guideContent");
+
+const apiFormat         = document.getElementById("apiFormat");
+const apiBaseInput      = document.getElementById("apiBase");
+const modelIdInput      = document.getElementById("modelId");
+const modelShowNameInput= document.getElementById("modelShowName");
+const apiKeyInput       = document.getElementById("apiKey");
+const tempInput         = document.getElementById("temp");
+const systemPromptInput = document.getElementById("systemPrompt");
+const advToggle         = document.getElementById("advToggle");
+const advPanel          = document.getElementById("advPanel");
+
+const imgInput          = document.getElementById("imgInput");
+const uploadImgBtn      = document.getElementById("uploadImgBtn");
+const imgPreviewBox     = document.getElementById("imgPreviewBox");
+const previewImg        = document.getElementById("previewImg");
+const removeImgBtn      = document.getElementById("removeImgBtn");
+
+const toastModal        = document.getElementById("toastModal");
+const toastText         = document.getElementById("toastText");
+const toastOkBtn        = document.getElementById("toastOkBtn");
+const modelSwitchSelect = document.getElementById("modelSwitchSelect");
+
+marked.setOptions({ gfm: true, breaks: true });
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]
+  ));
+}
+
+function getTheme(){
+  return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+}
+function setTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+  updateThemeBtn();
+}
+function updateThemeBtn(){
+  const isDark = getTheme() === "dark";
+  themeBtn.innerHTML = isDark
+    ? '<i class="fa fa-sun-o"></i>'
+    : '<i class="fa fa-moon-o"></i>';
+  themeBtn.title = isDark ? t("switchToLight") : t("switchToDark");
+  themeBtn.setAttribute("aria-label", themeBtn.title);
+}
+themeBtn.onclick = () => setTheme(getTheme() === "dark" ? "light" : "dark");
+
+langBtn.onclick = () => setLang(currentLang === "zh" ? "en" : "zh");
+
+function showToast(msg){
+  toastText.textContent = msg;
+  toastModal.classList.add("open");
+}
+function hideToast(){ toastModal.classList.remove("open"); }
+toastOkBtn.onclick = hideToast;
+
+function initCustomSelect(customId, selectId){
+  const custom = document.getElementById(customId);
+  if(!custom) return null;
+  const select = document.getElementById(selectId);
+  if(!select) return null;
+  const trigger = custom.querySelector(".custom-select-trigger");
+  const valueSpan = custom.querySelector(".custom-select-value");
+  const optionsBox = custom.querySelector(".custom-select-options");
+
+  function refresh(){
+    optionsBox.innerHTML = "";
+    Array.from(select.options).forEach(opt => {
+      const div = document.createElement("div");
+      div.className = "custom-select-option";
+      div.dataset.value = opt.value;
+      div.textContent = opt.textContent;
+      if(opt.value === select.value) div.classList.add("selected");
+      div.addEventListener("click", e => {
+        e.stopPropagation();
+        select.value = opt.value;
+        valueSpan.textContent = opt.textContent;
+        optionsBox.querySelectorAll(".custom-select-option").forEach(el => el.classList.remove("selected"));
+        div.classList.add("selected");
+        custom.classList.remove("open");
+        select.dispatchEvent(new Event("change"));
+      });
+      optionsBox.appendChild(div);
+    });
+    sync();
+  }
+
+  function sync(){
+    const selectedOpt = select.options[select.selectedIndex];
+    if(selectedOpt) valueSpan.textContent = selectedOpt.textContent;
+    optionsBox.querySelectorAll(".custom-select-option").forEach(el => {
+      el.classList.toggle("selected", el.dataset.value === select.value);
+    });
+  }
+
+  trigger.addEventListener("click", e => {
+    e.stopPropagation();
+    document.querySelectorAll(".custom-select.open").forEach(el => {
+      if(el !== custom) el.classList.remove("open");
+    });
+    custom.classList.toggle("open");
+  });
+
+  refresh();
+
+  return { refresh, sync };
+}
+
+document.addEventListener("click", () => {
+  document.querySelectorAll(".custom-select.open").forEach(el => el.classList.remove("open"));
+});
+
+function loadModelList(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    modelList = Array.isArray(parsed) ? parsed : [];
+    modelList.forEach(m => { if(!m.uid) m.uid = uid(); });
+  }catch(e){
+    modelList = [];
+  }
+  renderModelSelect();
+}
+
+function saveModelList(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(modelList)); }catch(e){}
+  renderModelSelect();
+}
+
+function renderModelSelect(){
+  modelSwitchSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = t("selectModel");
+  modelSwitchSelect.appendChild(placeholder);
+
+  modelList.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.uid;
+    opt.textContent = m.showName || m.modelId;
+    if(m.uid === currentUid) opt.selected = true;
+    modelSwitchSelect.appendChild(opt);
+  });
+  if(modelCustomSelect) modelCustomSelect.refresh();
+}
+
+modelSwitchSelect.onchange = function(){
+  const id = this.value;
+  if(!id){
+    currentUid = null;
+    if(settingModal.classList.contains("open")) resetForm();
+    return;
+  }
+  currentUid = id;
+  const m = modelList.find(x => x.uid === id);
+  if(m){
+    showToast(t("switchedTo", { name: m.showName || m.modelId }));
+    if(settingModal.classList.contains("open")) fillForm(m);
+  }
+};
+
+function resetForm(){
+  currentUid = null;
+  apiFormat.value = "chat";
+  if(apiFormatCustomSelect) apiFormatCustomSelect.sync();
+  apiBaseInput.value = "";
+  modelIdInput.value = "";
+  modelShowNameInput.value = "";
+  apiKeyInput.value = "";
+  tempInput.value = 0.7;
+  systemPromptInput.value = DEFAULT_SYSTEM;
+  deleteModelBtn.classList.add("is-hidden");
+}
+
+function fillForm(cfg){
+  currentUid = cfg.uid;
+  apiFormat.value = cfg.format || "chat";
+  if(apiFormatCustomSelect) apiFormatCustomSelect.sync();
+  apiBaseInput.value = cfg.base || "";
+  modelIdInput.value = cfg.modelId || "";
+  modelShowNameInput.value = cfg.showName || "";
+  apiKeyInput.value = cfg.key || "";
+  tempInput.value = (cfg.temp ?? 0.7);
+  systemPromptInput.value = cfg.system || DEFAULT_SYSTEM;
+  deleteModelBtn.classList.remove("is-hidden");
+}
+
+function openSettingModal(){
+  const cfg = modelList.find(m => m.uid === currentUid);
+  if(cfg) fillForm(cfg); else resetForm();
+  settingModal.classList.add("open");
+}
+function closeSettingModal(){ settingModal.classList.remove("open"); }
+function openGuideModal(){ guideModal.classList.add("open"); }
+function closeGuideModal(){ guideModal.classList.remove("open"); }
+
+settingBtn.onclick = openSettingModal;
+closeModalBtn.onclick = closeSettingModal;
+helpBtn.onclick = openGuideModal;
+closeGuideBtn.onclick = closeGuideModal;
+
+settingModal.addEventListener("mousedown", e => {
+  if(e.target === settingModal) closeSettingModal();
+});
+guideModal.addEventListener("mousedown", e => {
+  if(e.target === guideModal) closeGuideModal();
+});
+
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    if(settingModal.classList.contains("open")) closeSettingModal();
+    if(guideModal.classList.contains("open")) closeGuideModal();
+  }
+});
+
+advToggle.onclick = () => {
+  advPanel.classList.toggle("is-hidden");
+  advToggle.querySelector("i").classList.toggle("rotated");
+};
+
+saveSettingBtn.onclick = function(){
+  const temp = parseFloat(tempInput.value);
+  const cfg = {
+    uid: currentUid || uid(),
+    format: apiFormat.value,
+    base: apiBaseInput.value.trim().replace(/\/+$/, ""),
+    modelId: modelIdInput.value.trim(),
+    showName: modelShowNameInput.value.trim(),
+    key: apiKeyInput.value.trim(),
+    temp: Number.isFinite(temp) ? Math.min(1, Math.max(0, temp)) : 0.7,
+    system: systemPromptInput.value.trim() || DEFAULT_SYSTEM
+  };
+
+  if(!cfg.base || !cfg.modelId || !cfg.key){
+    showToast(t("requiredFields"));
+    return;
+  }
+
+  const idx = modelList.findIndex(m => m.uid === cfg.uid);
+  if(idx >= 0) modelList[idx] = cfg;
+  else modelList.push(cfg);
+
+  currentUid = cfg.uid;
+  saveModelList();
+  deleteModelBtn.classList.remove("is-hidden");
+  closeSettingModal();
+  showToast(t("modelSaved"));
+};
+
+deleteModelBtn.onclick = function(){
+  if(!currentUid) return;
+  modelList = modelList.filter(m => m.uid !== currentUid);
+  currentUid = null;
+  saveModelList();
+  resetForm();
+  closeSettingModal();
+  showToast(t("modelDeleted"));
+};
+
+resetSettingBtn.onclick = resetForm;
+
+uploadImgBtn.onclick = () => imgInput.click();
+
+imgInput.onchange = e => {
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    imageBase64 = ev.target.result;
+    previewImg.src = imageBase64;
+    imgPreviewBox.classList.add("open");
+  };
+  reader.readAsDataURL(file);
+};
+
+removeImgBtn.onclick = () => {
+  imageBase64 = null;
+  imgInput.value = "";
+  imgPreviewBox.classList.remove("open");
+};
+
+document.addEventListener("paste", e => {
+  const items = e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  for(const item of items){
+    if(item.type && item.type.startsWith("image/")){
+      const file = item.getAsFile();
+      if(!file) continue;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        imageBase64 = ev.target.result;
+        previewImg.src = imageBase64;
+        imgPreviewBox.classList.add("open");
+      };
+      reader.readAsDataURL(file);
+      break;
+    }
+  }
+});
+
+function addMessage(text, role, imgSrc = null){
+  const tip = chatInner.querySelector(".empty-tip");
+  if(tip) tip.remove();
+
+  const wrap = document.createElement("div");
+  wrap.className = `message ${role === "user" ? "user" : "ai"}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${role === "user" ? "bubble-user" : "bubble-ai"}`;
+
+  if(imgSrc){
+    const imgEl = document.createElement("img");
+    imgEl.src = imgSrc;
+    imgEl.className = "img-preview";
+    imgEl.alt = t("imageAlt");
+    bubble.appendChild(imgEl);
+  }
+
+  const textWrap = document.createElement("div");
+  textWrap.className = "bubble-text";
+  if(role === "ai"){
+    textWrap.innerHTML = text ? marked.parse(text) : "";
+  }else{
+    textWrap.textContent = text || "";
+  }
+  bubble.appendChild(textWrap);
+
+  wrap.appendChild(bubble);
+  chatInner.appendChild(wrap);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  return textWrap;
+}
+
+function splitDataUrl(dataUrl){
+  const m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl || "");
+  if(!m) return { mediaType: "image/png", data: (String(dataUrl).split(",")[1] || "") };
+  return { mediaType: m[1], data: m[2] };
+}
+
+function toAnthropicMessages(msgs){
+  return msgs.map(m => {
+    if(typeof m.content === "string") return { role: m.role, content: m.content };
+    const blocks = m.content.map(part => {
+      if(part.type === "text") return { type: "text", text: part.text };
+      if(part.type === "image_url"){
+        const { mediaType, data } = splitDataUrl(part.image_url.url);
+        return { type: "image", source: { type: "base64", media_type: mediaType, data } };
+      }
+      return null;
+    }).filter(Boolean);
+    return { role: m.role, content: blocks };
+  });
+}
+
+function toResponsesInput(msgs){
+  return msgs.map(m => {
+    const textType = m.role === "assistant" ? "output_text" : "input_text";
+    if(typeof m.content === "string"){
+      return { role: m.role, content: [{ type: textType, text: m.content }] };
+    }
+    return {
+      role: m.role,
+      content: m.content.map(part => {
+        if(part.type === "text") return { type: textType, text: part.text };
+        return { type: "input_image", image_url: part.image_url.url };
+      })
+    };
+  });
+}
+
+function buildRequest(cfg, msgs, maxTokens){
+  const base = cfg.base.replace(/\/+$/, "");
+  const sys  = cfg.system || DEFAULT_SYSTEM;
+
+  if(cfg.format === "anthropic"){
+    return {
+      url: `${base}/messages`,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": cfg.key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: {
+        model: cfg.modelId,
+        system: sys,
+        messages: toAnthropicMessages(msgs),
+        temperature: cfg.temp,
+        max_tokens: maxTokens || 4096,
+        stream: true
+      }
+    };
+  }
+
+  if(cfg.format === "responses"){
+    return {
+      url: `${base}/responses`,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${cfg.key}`
+      },
+      body: {
+        model: cfg.modelId,
+        instructions: sys,
+        input: toResponsesInput(msgs),
+        temperature: cfg.temp,
+        max_output_tokens: maxTokens || 4096,
+        stream: true
+      }
+    };
+  }
+
+  return {
+    url: `${base}/chat/completions`,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${cfg.key}`
+    },
+    body: {
+      model: cfg.modelId,
+      messages: [{ role: "system", content: sys }, ...msgs],
+      temperature: cfg.temp,
+      max_tokens: maxTokens || 4096,
+      stream: true
+    }
+  };
+}
+
+function extractDelta(format, json){
+  if(format === "anthropic"){
+    if(json.type === "content_block_delta") return json.delta?.text || "";
+    return "";
+  }
+  if(format === "responses"){
+    if(json.type === "response.output_text.delta") return json.delta || "";
+    return "";
+  }
+  const c = json.choices?.[0]?.delta?.content;
+  if(typeof c === "string") return c;
+  if(Array.isArray(c)) return c.map(p => p?.text || "").join("");
+  return "";
+}
+
+async function sendMessage(){
+  const cfg = modelList.find(m => m.uid === currentUid);
+  if(!cfg){ showToast(t("selectModelFirst")); return; }
+
+  const userText = userInput.value.trim();
+  if(!userText && !imageBase64) return;
+
+  userInput.value = "";
+
+  let userContent;
+  if(imageBase64){
+    userContent = [
+      { type: "text", text: userText || t("defaultImagePrompt") },
+      { type: "image_url", image_url: { url: imageBase64 } }
+    ];
+  }else{
+    userContent = userText;
+  }
+  messages.push({ role: "user", content: userContent });
+
+  addMessage(userText, "user", imageBase64);
+
+  imageBase64 = null;
+  imgInput.value = "";
+  imgPreviewBox.classList.remove("open");
+
+  const aiTextWrap = addMessage("", "ai");
+  const aiBubble   = aiTextWrap.parentElement;
+
+  sendBtn.classList.add("is-hidden");
+  stopBtn.classList.remove("is-hidden");
+  fetchController = new AbortController();
+
+  let fullText = "";
+  let renderTimer = null;
+
+  const render = () => {
+    if(renderTimer) return;
+    renderTimer = setTimeout(() => {
+      renderTimer = null;
+      aiTextWrap.innerHTML = marked.parse(fullText);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 60);
+  };
+
+  try{
+    const req = buildRequest(cfg, messages);
+
+    const resp = await fetch(req.url, {
+      method: "POST",
+      headers: req.headers,
+      body: JSON.stringify(req.body),
+      signal: fetchController.signal
+    });
+
+    if(!resp.ok){
+      let detail = "";
+      try{
+        const j = await resp.json();
+        detail = j?.error?.message || j?.message || "";
+      }catch(e){}
+      throw new Error(`HTTP ${resp.status}${detail ? " · " + detail : ""}`);
+    }
+    if(!resp.body) throw new Error("Response body is empty; streaming may not be supported");
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    const handleLine = line => {
+      const s = line.trim();
+      if(!s || s.startsWith(":") || s.startsWith("event:")) return;
+      if(!s.startsWith("data:")) return;
+      const dataStr = s.slice(5).trim();
+      if(!dataStr || dataStr === "[DONE]") return;
+
+      let json;
+      try{ json = JSON.parse(dataStr); }catch(e){ return; }
+
+      const piece = extractDelta(cfg.format, json);
+      if(piece){
+        fullText += piece;
+        render();
+      }
+    };
+
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      for(const line of lines) handleLine(line);
+    }
+    if(buffer) handleLine(buffer);
+
+    if(renderTimer){ clearTimeout(renderTimer); renderTimer = null; }
+    aiTextWrap.innerHTML = marked.parse(fullText || t("emptyResponse"));
+    messages.push({ role: "assistant", content: fullText });
+
+  }catch(err){
+    if(renderTimer){ clearTimeout(renderTimer); renderTimer = null; }
+
+    if(err.name === "AbortError"){
+      if(fullText){
+        aiTextWrap.innerHTML = marked.parse(fullText);
+        messages.push({ role: "assistant", content: fullText });
+      }else{
+        const msgEl = aiBubble.closest(".message");
+        if(msgEl) msgEl.remove();
+      }
+      if(aiBubble.isConnected){
+        const tip = document.createElement("div");
+        tip.className = "stop-tip";
+        tip.textContent = t("stopped");
+        aiBubble.appendChild(tip);
+      }
+    }else{
+      aiTextWrap.innerHTML =
+        `<p style="color:#ef4444">${t("requestError", { msg: escapeHtml(err.message) })}</p>` +
+        `<p class="form-hint" style="margin-top:6px">${t("corsHint")}</p>`;
+    }
+  }finally{
+    sendBtn.classList.remove("is-hidden");
+    stopBtn.classList.add("is-hidden");
+    fetchController = null;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+}
+
+async function testConnect(){
+  const base    = apiBaseInput.value.trim().replace(/\/+$/, "");
+  const modelId = modelIdInput.value.trim();
+  const key     = apiKeyInput.value.trim();
+  const format  = apiFormat.value;
+
+  if(!base || !modelId || !key){
+    showToast(t("requiredFields"));
+    return;
+  }
+
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  const oldHtml = testConnBtn.innerHTML;
+
+  testConnBtn.disabled = true;
+  testConnBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>' + t("testing");
+
+  try{
+    let url, headers, body;
+
+    if(format === "anthropic"){
+      url = `${base}/messages`;
+      headers = {
+        "Content-Type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      };
+      body = { model: modelId, max_tokens: 16, messages: [{ role: "user", content: "hi" }] };
+    }else if(format === "responses"){
+      url = `${base}/responses`;
+      headers = { "Content-Type": "application/json", "Authorization": `Bearer ${key}` };
+      body = { model: modelId, input: "hi", max_output_tokens: 16 };
+    }else{
+      url = `${base}/chat/completions`;
+      headers = { "Content-Type": "application/json", "Authorization": `Bearer ${key}` };
+      body = { model: modelId, messages: [{ role: "user", content: "hi" }], max_tokens: 16 };
+    }
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      signal: ctrl.signal
+    });
+
+    if(res.ok){
+      showToast(t("testSuccess"));
+    }else{
+      let detail = "";
+      try{
+        const j = await res.json();
+        detail = j?.error?.message || j?.message || "";
+      }catch(e){}
+      showToast(t("requestFailed", { status: res.status, detail: detail ? " · " + detail : "" }));
+    }
+  }catch(e){
+    showToast(e.name === "AbortError" ? t("timeout") : t("networkError"));
+  }finally{
+    clearTimeout(timer);
+    testConnBtn.disabled = false;
+    testConnBtn.innerHTML = oldHtml;
+    applyI18n();
+  }
+}
+testConnBtn.onclick = testConnect;
+
+function clearChat(){
+  messages = [];
+  imageBase64 = null;
+  imgInput.value = "";
+  imgPreviewBox.classList.remove("open");
+  chatInner.innerHTML = emptyTipHtml();
+}
+
+sendBtn.onclick = sendMessage;
+clearChatBtn.onclick = clearChat;
+
+stopBtn.onclick = () => {
+  if(fetchController) fetchController.abort();
+};
+
+userInput.addEventListener("keydown", e => {
+  if(e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+modelCustomSelect = initCustomSelect("modelSwitchCustom", "modelSwitchSelect");
+apiFormatCustomSelect = initCustomSelect("apiFormatCustom", "apiFormat");
+
+loadLang();
+document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+
+loadModelList();
+
+applyI18n();
+applyApiFormatOptions();
+updateThemeBtn();
+updateLangBtn();
+renderGuide();
+refreshEmptyTip();
+
+document.title = t("appTitle");
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"ba0026180963492fa893d9c665a903fe","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
