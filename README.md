@@ -1,4 +1,4 @@
-# SUNXC 作业助手
+# SUNXC-ZY
 
 [简体中文](#简体中文) | [English](#english)
 
